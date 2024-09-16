@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dosage Divider</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Rx crush</h1>
+        <form id="dosageForm">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="drugName">Drug name:</label>
+                    <input type="text" class="form-control" id="drugName" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="labelledDose">Labelled Dose (p) in mg:</label>
+                    <input type="number" class="form-control" id="labelledDose" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="requiredDose">Required Dose (x) in mg:</label>
+                    <input type="number" class="form-control" id="requiredDose" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="numTablets">Number of Tablets (q):</label>
+                    <input type="number" class="form-control" id="numTablets" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="weightTablets">Weight of Tablets (a) in g:</label>
+                    <input type="number" class="form-control" id="weightTablets" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="weightPowderedTablets">Weight of Powdered Tablets (b) in g:</label>
+                    <input type="number" class="form-control" id="weightPowderedTablets" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Calculate</button>
+        </form>
+
+        <div class="mt-4">
+            <h3>Results:</h3>
+            <p id="outputE"></p>
+            <p id="outputF"></p>
+            <p id="outputComments"></p>
+        </div>
+    </div>
+
+    <script>
+       document.getElementById('dosageForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const drugName = document.getElementById('drugName').value; // Get the drug name
+            const p = parseFloat(document.getElementById('labelledDose').value);
+            const x = parseFloat(document.getElementById('requiredDose').value);
+            const q = parseFloat(document.getElementById('numTablets').value);
+            const a = parseFloat(document.getElementById('weightTablets').value);
+            const b = parseFloat(document.getElementById('weightPowderedTablets').value);
+
+
+            try{
+            const response = await fetch('http://localhost:3000/calculate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ drugName, p, x, q, a, b }),
+                    });
+
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        document.getElementById('outputE').textContent = `Amount of drug in each sachet : ${data.e}`;
+                        document.getElementById('outputF').textContent = `Max number of sachets prepared : ${data.f}`;
+                        document.getElementById('outputComments').textContent = `Comments: ${data.comments}`;
+                    } else {
+                        console.error('Failed to fetch:', data);
+                        document.getElementById('outputE').textContent = `Error: ${data.message}`;
+                    }
+                }
+                catch (error) {
+                    console.error('Network error:', error);
+                    document.getElementById('outputE').textContent = 'Network error occurred';
+                }
+
+        });
+    </script>
+</body>
+</html>
